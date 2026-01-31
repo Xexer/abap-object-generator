@@ -87,6 +87,13 @@ CLASS zcl_gen_objects IMPLEMENTATION.
       ddic_configuration-package = xco_cp_abap=>class( CONV #( calling_object ) )->if_xco_ar_object~get_package( )->name.
     ENDIF.
 
+    IF ddic_configuration-transport IS INITIAL.
+      TRY.
+          ddic_configuration-transport = xco_cp_abap=>class( CONV #( calling_object ) )->if_xco_cts_changeable~get_object( )->get_lock( )->get_transport( ).
+        CATCH cx_root.
+      ENDTRY.
+    ENDIF.
+
     IF ddic_configuration-prefix IS INITIAL.
       RETURN.
     ENDIF.
@@ -159,7 +166,7 @@ CLASS zcl_gen_objects IMPLEMENTATION.
           format = xco_cp_abap_dictionary=>built_in_type->dec( iv_length   = CONV #( domain-length )
                                                                iv_decimals = CONV #( domain-decimals ) ).
         WHEN zif_gen_objects=>domain_types-raw.
-          format = xco_cp_abap_dictionary=>built_in_type->lraw( CONV #( default_string_length ) ).
+          format = xco_cp_abap_dictionary=>built_in_type->raw( CONV #( domain-length ) ).
         WHEN zif_gen_objects=>domain_types-string.
           format = xco_cp_abap_dictionary=>built_in_type->string( CONV #( default_string_length ) ).
         WHEN zif_gen_objects=>domain_types-short_string.
@@ -245,6 +252,7 @@ CLASS zcl_gen_objects IMPLEMENTATION.
                                                                                 ELSE table-description ).
 
       specification->set_short_description( description ).
+      specification->set_data_maintenance( xco_cp_database_table=>data_maintenance->allowed ).
 
       LOOP AT table-fields INTO DATA(field).
         DATA(new_field) = specification->add_field( field-name ).
