@@ -37,6 +37,11 @@ CLASS zcl_gen_objects DEFINITION
     "! @parameter operation     | Operation
     METHODS generate_abstract_entities
       IMPORTING operation TYPE REF TO if_xco_cp_gen_d_o_put.
+
+    "! Generate all DDIC tables
+    "! @parameter operation     | Operation
+    METHODS generate_tables
+      IMPORTING operation TYPE REF TO if_xco_cp_gen_d_o_put.
 ENDCLASS.
 
 
@@ -56,6 +61,7 @@ CLASS zcl_gen_objects IMPLEMENTATION.
     generate_domains( put_operation ).
     generate_data_elements( put_operation ).
     generate_abstract_entities( put_operation ).
+    generate_tables( put_operation ).
 
     RETURN put_operation->execute( ).
   ENDMETHOD.
@@ -210,6 +216,36 @@ CLASS zcl_gen_objects IMPLEMENTATION.
 
         IF field-unit IS NOT INITIAL.
           cds_field->add_annotation( 'Semantics.quantity.unitOfMeasure' )->value->build( )->add_string( field-unit ).
+        ENDIF.
+      ENDLOOP.
+    ENDLOOP.
+  ENDMETHOD.
+
+
+  METHOD generate_tables.
+    LOOP AT ddic_configuration-ddic_tables INTO DATA(table).
+      DATA(specification) = operation->for-tabl-for-database_table->add_object( table-name
+        )->set_package( ddic_configuration-package
+        )->create_form_specification( ).
+
+      DATA(description) = COND if_xco_cp_gen_dtel_s_form=>tv_short_description( WHEN table-description IS INITIAL
+                                                                                THEN |Table: { table-name }|
+                                                                                ELSE table-description ).
+
+      specification->set_short_description( description ).
+
+      LOOP AT table-fields INTO DATA(field).
+        DATA(new_field) = specification->add_field( field-name ).
+
+        new_field->set_key_indicator( field-key ).
+        new_field->set_type( xco_cp_abap_dictionary=>data_element( field-data_element ) ).
+
+        IF field-currency IS NOT INITIAL.
+          new_field->currency_quantity->set_reference_field( field-currency ).
+        ENDIF.
+
+        IF field-unit IS NOT INITIAL.
+          new_field->currency_quantity->set_reference_field( field-unit ).
         ENDIF.
       ENDLOOP.
     ENDLOOP.

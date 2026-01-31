@@ -36,6 +36,22 @@ INTERFACE zif_gen_objects
          END OF abstract_entity.
   TYPES abstract_entities TYPE STANDARD TABLE OF abstract_entity WITH EMPTY KEY.
 
+  TYPES: BEGIN OF ddic_field,
+           name         TYPE sxco_cds_field_name,
+           data_element TYPE sxco_ad_object_name,
+           key          TYPE abap_boolean,
+           currency     TYPE if_xco_gen_tabl_s_fo_curr_quan=>tv_reference_field,
+           unit         TYPE if_xco_gen_tabl_s_fo_curr_quan=>tv_reference_field,
+         END OF ddic_field.
+  TYPES ddic_fields TYPE STANDARD TABLE OF ddic_field WITH EMPTY KEY.
+
+  TYPES: BEGIN OF ddic_table,
+           name        TYPE sxco_dbt_object_name,
+           description TYPE if_xco_cp_gen_dtel_s_form=>tv_short_description,
+           fields      TYPE ddic_fields,
+         END OF ddic_table.
+  TYPES ddic_tables TYPE STANDARD TABLE OF ddic_table WITH EMPTY KEY.
+
   TYPES: BEGIN OF ddic_configuration,
            package           TYPE sxco_package,
            transport         TYPE sxco_transport,
@@ -43,6 +59,7 @@ INTERFACE zif_gen_objects
            domains           TYPE domains,
            data_elements     TYPE data_elements,
            abstract_entities TYPE abstract_entities,
+           ddic_tables       TYPE ddic_tables,
          END OF ddic_configuration.
 
   CONSTANTS:
