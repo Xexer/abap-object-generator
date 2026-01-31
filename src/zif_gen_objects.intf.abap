@@ -76,6 +76,7 @@ INTERFACE zif_gen_objects
       unit          TYPE string VALUE `UNIT`,
       decimals      TYPE string VALUE `DEC`,
       raw           TYPE string VALUE `RAW`,
+      raw_string    TYPE string VALUE `RAWSTRING`,
       string        TYPE string VALUE `STRING`,
       short_string  TYPE string VALUE `SSTRING`,
     END OF domain_types.

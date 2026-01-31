@@ -10,7 +10,8 @@ CLASS zcl_gen_objects DEFINITION
       IMPORTING calling_object TYPE zif_gen_objects=>calling_object DEFAULT sy-repid.
 
   PRIVATE SECTION.
-    CONSTANTS default_string_length     TYPE i VALUE 32000.
+    CONSTANTS default_string_length     TYPE i VALUE 0.
+    CONSTANTS default_rawstring_length  TYPE i VALUE 0.
     CONSTANTS default_unit_length       TYPE i VALUE 3.
     CONSTANTS default_currency_length   TYPE i VALUE 15.
     CONSTANTS default_currency_decimals TYPE i VALUE 2.
@@ -47,9 +48,15 @@ ENDCLASS.
 
 CLASS zcl_gen_objects IMPLEMENTATION.
   METHOD constructor.
+    DATA(found_position) = find( val = calling_object
+                                 sub = '=' ).
+    IF found_position = -1.
+      found_position = find( val = calling_object
+                             sub = 'CP' ).
+    ENDIF.
+
     me->calling_object = substring( val = calling_object
-                                    len = find( val = calling_object
-                                                sub = '=' ) ).
+                                    len = found_position ).
   ENDMETHOD.
 
 
@@ -157,6 +164,11 @@ CLASS zcl_gen_objects IMPLEMENTATION.
           format = xco_cp_abap_dictionary=>built_in_type->string( CONV #( default_string_length ) ).
         WHEN zif_gen_objects=>domain_types-short_string.
           format = xco_cp_abap_dictionary=>built_in_type->sstring( CONV #( domain-length ) ).
+        WHEN zif_gen_objects=>domain_types-raw_string.
+          length = COND #( WHEN domain-length IS INITIAL
+                           THEN default_rawstring_length
+                           ELSE domain-length ).
+          format = xco_cp_abap_dictionary=>built_in_type->rawstring( CONV #( length ) ).
         WHEN OTHERS.
           CONTINUE.
       ENDCASE.
